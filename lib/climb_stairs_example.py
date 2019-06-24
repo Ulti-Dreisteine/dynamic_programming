@@ -21,6 +21,10 @@ Created on Mon Oct  8 14:32:52 2018
 测试算例为：
 	有一座高度是10级台阶的楼梯，从下往上走，每跨一步只能向上1级或者2级台阶，求出一共有多少种走法。
 """
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
+from pycallgraph import Config
+from pycallgraph import GlobbingFilter
 import time
 import matplotlib.pyplot as plt
 
@@ -58,16 +62,16 @@ class ClimbingStairsProblem(object):
 		for i in range(3, n + 1):
 			temp_list.append(temp_list[-1] + temp_list[-2])
 		return temp_list[-1]
-	
 
-if __name__ == '__main__':
+
+def main():
 	# 获得不同算法的时间消耗
 	csp = ClimbingStairsProblem()
 	methods = [csp.recursive_solution, csp.memo_dict_solution, csp.dp_solution]
 	time_costs = {}
 	for method in methods:
 		time_costs[method.__name__] = []
-		for n in range(1, 30):
+		for n in range(1, 20):
 			time_start = time.time()
 			results = method(n)
 			time_cost = time.time() - time_start
@@ -81,6 +85,23 @@ if __name__ == '__main__':
 	plt.xlabel('number of stairs')
 	plt.ylabel('time cost (seconds)')
 	plt.grid(True)
+
+
+if __name__ == '__main__':
+	config = Config()
+	config.trace_filter = GlobbingFilter(
+		exclude = [
+			'pycallgraph.*',
+			'*.secret_function',
+			'*pydev*',
+			'_handle_fromlist',
+			'__new__'
+		]
+	)
+	graphviz = GraphvizOutput()
+	graphviz.output_file = 'graph.png'
+	with PyCallGraph(output = graphviz, config = config):
+		main()
 
 
 
